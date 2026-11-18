@@ -1,5 +1,5 @@
 // Raya consultant platform — offline cache (works 100% offline once warmed)
-const V = 'rc-2026-11-13b';
+const V = 'rc-2026-11-18a';
 // the app shell + everything the first screen needs: saved at install, one missing file never blocks the install
 const CORE = ['./', './index.html', './config.js', './manifest.webmanifest', './img/icon-192.png', './img/icon-512.png', './img/icon-maskable-512.png', './img/raya-logo-white.png', './offline-files.json'];
 const CFG = './config.js';
@@ -32,7 +32,7 @@ self.addEventListener('fetch', (e) => {
   const u = new URL(req.url);
   if (u.origin !== location.origin && !u.host.includes('fonts.g')) return;
   // Google Sheet API calls, internal paths, and audio/video range requests are never cached
-  const gameAudio = u.pathname.includes('/saheb-elbeit/audio/')
+  const gameAudio = u.pathname.includes('/saheb-elbeit/audio/') || u.pathname.includes('/listen/')
   // the game's sound effects are kept too: a player's range request is answered from the saved file
   if (gameAudio && req.headers.has('range')) { e.respondWith(rangeFrom(req)); return; }
   if (u.search.includes('action=') || u.pathname.includes('__') || req.headers.has('range') || (!gameAudio && /\.(mp3|mp4|wav|ogg|webm)$/i.test(u.pathname))) return;
