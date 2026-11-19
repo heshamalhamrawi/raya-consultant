@@ -728,7 +728,19 @@
     }
     if (CFG.resultsUrl) {
       // Google Sheet (Apps Script web app): plain-text POST avoids a CORS preflight; one row per HRID
-      writing = writing.then(() => fetch(CFG.resultsUrl, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(body), keepalive: true })).catch(() => {});
+      // the answer is read when the browser allows it: «الشيت مشغول» (600 موظف في نفس الوقت) → retry up to 3 times, then send the old way
+      const payload = JSON.stringify(body);
+      const send = async (n) => {
+        try {
+          const r = await fetch(CFG.resultsUrl, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: payload });
+          const j = await r.json().catch(() => null);
+          if (j && j.ok) return;
+          if (n < 3 && (!j || j.busy)) { await new Promise((ok) => setTimeout(ok, 4000 * (n + 1) + Math.random() * 4000)); return send(n + 1); }
+          if (j) return; // a real refusal (bad HRID): nothing to retry
+        } catch (e) { /* this WebView can't read the answer */ }
+        await fetch(CFG.resultsUrl, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: payload, keepalive: true });
+      };
+      writing = writing.then(() => send(0)).catch(() => {});
       return;
     }
     if (CFG.excelUrl || !DB || !MYID) return;
