@@ -403,7 +403,7 @@
     const n = run.items.length, right = Object.values(run.first).filter(Boolean).length;
     $('hTitle').textContent = run.title;
     if (run.phase === 'review') { $('hProg').textContent = `مراجعة الغلطات · باقي ${ar(run.queue.length)}`; $('hFill').style.width = '100%'; $('hPct').textContent = '✓'; }
-    else { const i = Math.min(run.i, n); $('hProg').textContent = run.phase === 'intro' ? `${ar(n)} سؤال وموقف` : `${ar(i + 1)} من ${ar(n)}`; $('hFill').style.width = (i / n * 100) + '%'; $('hPct').textContent = ar(Math.round(i / n * 100)) + '٪'; }
+    else { const i = Math.min(run.i, n); $('hProg').textContent = run.phase === 'intro' ? `${ar(n)} سؤال وموقف` : `${ar(i + 1)} من ${ar(n)}`; $('hFill').style.width = (i / n * 100) + '%'; $('hPct').textContent = i === 0 ? 'البداية' : ar(Math.round(i / n * 100)) + '٪'; }
     $('hScore').textContent = `${ar(right)} صح`;
   }
   function renderRun() {
