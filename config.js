@@ -3,7 +3,9 @@ window.RC_CONFIG = {
   // رابط Google Apps Script (Web app URL) اللي بينتهي بـ /exec — سيبه فاضي لحد ما تعمل الشيت
   endpoint: "https://script.google.com/macros/s/AKfycbypz4DwzoPji1nUJQQ6d1B9qSUKncRpqilURYSerOUCPG_jwpfjqyv8f_2OZ3gztKbs/exec",
   // غيّر الرقم ده (مثلاً لتاريخ اليوم) كل ما تحدّث ملفات data عشان الموبايلات تاخد الجديد
-  dataVersion: "2026-11-19",
+  dataVersion: "2026-11-20",
+  // تاريخ آخر تحديث لكل مصدر، بيظهر تحت كل إجابة على حسب مصدرها. غيّره لما تحدّث الملف ده بس
+  dataDates: { products: "2026-11-13", guide: "2026-11-13", staff: "2026-11-05" },
 
   // 💳 برامج التقسيط في الحاسبة: الاسم والمدد المتاحة بس.
   //   النسب والمصاريف مش هنا عشان العروض بتتغير كل يوم تقريباً: المستشار بيكتبها في الحاسبة لكل عميل، ومش بتتحفظ.

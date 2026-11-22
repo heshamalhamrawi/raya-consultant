@@ -11,10 +11,18 @@
   const pad = (n) => String(n).padStart(2, '0');
 
   /* ---------- storage ---------- */
-  const KEY = 'saheb-elbeit-v3';
+  // كل مستشار ليه حفظ لوحده (بكوده في المنصة)، عشان اتنين على نفس الموبايل ميتلخبطوش
+  const OLD = 'saheb-elbeit-v3';
+  let me = ''; try { me = String((JSON.parse(localStorage.getItem('rc_user') || 'null') || {}).code || ''); } catch (e) {}
+  const KEY = OLD + '@' + (me || '_');
   const fresh = () => ({ attempts: [], startedAt: '', name: '', hrid: '', branch: '', mgr: '', area: '', seenStory: false, keys: {}, run: {}, certs: {}, nopes: 0, music: true, sfx: true, voice: true });
   let save = fresh();
-  try { const s = JSON.parse(localStorage.getItem(KEY) || 'null'); if (s) save = Object.assign(save, s); } catch (e) {}
+  try {
+    let s = JSON.parse(localStorage.getItem(KEY) || 'null');
+    // الحفظ القديم (قبل الفصل) بيروح لصاحبه بس: نفس الكود، أو حفظ من غير كود
+    if (!s) { const o = JSON.parse(localStorage.getItem(OLD) || 'null'); if (o && (!o.hrid || String(o.hrid) === me)) { s = o; localStorage.setItem(KEY, JSON.stringify(o)); localStorage.removeItem(OLD); } }
+    if (s) save = Object.assign(save, s);
+  } catch (e) {}
   const CFG = window.SAHEB_CONFIG || {};
   const persist = () => { try { localStorage.setItem(KEY, JSON.stringify(save)); } catch (e) {} };
   /* ---------- audio: music + sfx (Web Audio, generated) ---------- */
@@ -83,6 +91,22 @@
     }, 40);
   }
   function stopMusic() { if (musicTimer) { clearInterval(musicTimer); musicTimer = null; } }
+  /* وقف كل الأصوات (موسيقى + مؤثرات + مقاطع الشخصيات + القراءة الصوتية) — عند الخروج أو تبديل الصفحة */
+  function killAudio() {
+    try { hush(); } catch (e) {}
+    stopMusic();
+    try { if (ac && ac.state === 'running') ac.suspend(); } catch (e) {}
+    try { document.querySelectorAll('audio,video').forEach(function (m) { m.pause(); }); } catch (e) {}
+  }
+  var embeddedMode = /[?&]embed=1/.test(location.search);
+  window.addEventListener('pagehide', killAudio);
+  window.addEventListener('beforeunload', killAudio);
+  document.addEventListener('visibilitychange', function () { if (document.hidden) killAudio(); else if (!embeddedMode && save.music && started) startMusic(); });
+  window.addEventListener('message', function (e) {
+    var d = e && e.data; if (!d || !d.rc) return;
+    if (d.rc === 'game-stop') killAudio();
+    else if (d.rc === 'game-start' && save.music && started) startMusic();
+  });
   function sfx(kind) {
     if (!save.sfx || !audio()) return;
     if (ac.state === 'suspended') ac.resume();
@@ -218,7 +242,8 @@
   const screens = ['sHome', 'sStory', 'sReg', 'sHouse', 'sRun', 'sResult', 'sPick', 'sMine', 'sDash', 'sGuide'];
   let cur = 'sHome';
   function show(id) { screens.forEach((s) => { $(s).hidden = s !== id; }); cur = id; window.scrollTo(0, 0); if (id !== 'sRun') stopTimer(); }
-  const firstGesture = () => startMusic();
+  var started = false;
+  const firstGesture = () => { started = true; startMusic(); };
   document.addEventListener('pointerdown', firstGesture, { once: true });
   document.addEventListener('keydown', firstGesture, { once: true });
   function syncToggles() { $('tMusic').setAttribute('aria-pressed', save.music); $('tSfx').setAttribute('aria-pressed', save.sfx); $('tVoice').setAttribute('aria-pressed', save.voice); }
@@ -729,7 +754,8 @@
     if (CFG.resultsUrl) {
       // Google Sheet (Apps Script web app): plain-text POST avoids a CORS preflight; one row per HRID
       // the answer is read when the browser allows it: «الشيت مشغول» (600 موظف في نفس الوقت) → retry up to 3 times, then send the old way
-      const payload = JSON.stringify(body);
+      let tk = ''; try { tk = (JSON.parse(localStorage.getItem('rc_user') || 'null') || {}).tok || ''; } catch (e) {}
+      const payload = JSON.stringify(Object.assign({}, body, tk ? { tok: tk } : {}));
       const send = async (n) => {
         try {
           const r = await fetch(CFG.resultsUrl, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: payload });

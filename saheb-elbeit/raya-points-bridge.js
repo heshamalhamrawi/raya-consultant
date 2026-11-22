@@ -48,7 +48,7 @@
       var a = document.createElement('a');
       a.href = back; a.textContent = '→ رجوع للمنصة';
       a.setAttribute('style', 'position:fixed;bottom:max(env(safe-area-inset-bottom),6px);left:50%;transform:translateX(-50%);z-index:9999;background:rgba(0,23,128,.85);color:#fff;font:700 12px/1 system-ui,sans-serif;padding:8px 12px;border-radius:999px;text-decoration:none;box-shadow:0 4px 14px rgba(0,0,0,.25)');
-      if (embedded) a.addEventListener('click', function (e) { e.preventDefault(); try { window.parent.postMessage({ rc: 'game-close' }, '*'); } catch (x) {} });
+      if (embedded) a.addEventListener('click', function (e) { e.preventDefault(); try { window.dispatchEvent(new MessageEvent('message', { data: { rc: 'game-stop' } })); } catch (x) {} try { window.parent.postMessage({ rc: 'game-close' }, '*'); } catch (x) {} });
       document.body.appendChild(a);
     }
   }
