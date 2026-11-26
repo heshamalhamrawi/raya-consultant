@@ -1,5 +1,5 @@
 // Raya consultant platform — offline cache (works 100% offline once warmed)
-const V = 'rc-202611261311-50015bb500';
+const V = 'rc-202611261342-8a12dee9a5';
 // the app shell + everything the first screen needs: saved at install, one missing file never blocks the install
 const CORE = ['./', './index.html', './config.js', './manifest.webmanifest', './img/icon-192.png', './img/icon-512.png', './img/icon-maskable-512.png', './img/raya-logo-white.png', './offline-files.json'];
 const CFG = './config.js';
